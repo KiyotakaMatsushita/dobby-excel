@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "forceConsistentCasingInFileNames": true,
     "allowJs": true,
     "baseUrl": ".",
     "esModuleInterop": true,
@@ -7,6 +8,7 @@
     "jsx": "react",
     "noEmitOnError": true,
     "outDir": "lib",
+    "typeRoots": ["./node_modules/@types"],
     "sourceMap": true,
     "target": "es5",
     "lib": [

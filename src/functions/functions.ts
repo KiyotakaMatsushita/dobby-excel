@@ -105,7 +105,7 @@ export async function getStarCount(userName: string, repoName: string): Promise<
  * @param prompt string name of organization or user.
  * @return openai response.
  */
-export async function chat(prompt): Promise<string> {
+export async function chat(prompt: string): Promise<string> {
   const res = await fetchOpenAICompletion({
     apiKey: OPENAI_API_KEY,
     userContent: prompt,
@@ -121,7 +121,7 @@ export async function chat(prompt): Promise<string> {
  * @param prompt string name of organization or user.
  * @param {CustomFunctions.StreamingInvocation<string>} invocation Streaming invocation parameter.
  */
-export function streamChat(prompt, invocation: CustomFunctions.StreamingInvocation<string>): void {
+export function streamChat(prompt: string, invocation: CustomFunctions.StreamingInvocation<string>): void {
   fetchOpenAIStreamCompletion({
     apiKey: OPENAI_API_KEY,
     userContent: prompt,
