@@ -1,5 +1,6 @@
 ﻿/* global clearInterval, console, CustomFunctions, setInterval */
-
+import { OPENAI_API_KEY } from "../config";
+import { AIModelName, fetchOpenAICompletion, fetchOpenAIStreamCompletion } from "./core/provider/openai";
 /**
  * Adds two numbers.
  * @customfunction
@@ -63,4 +64,68 @@ export function logMessage(message: string): string {
   console.log(message);
 
   return message;
+}
+
+/**
+ * Gets the star count for a given Github organization or user and repository.
+ * @customfunction
+ * @param userName string name of organization or user.
+ * @param repoName string name of the repository.
+ * @return number of stars.
+ */
+export async function getStarCount(userName: string, repoName: string): Promise<number> {
+  const url = "https://api.github.com/repos/" + userName + "/" + repoName;
+
+  let xhttp = new XMLHttpRequest();
+
+  return new Promise(function (resolve, reject) {
+    xhttp.onreadystatechange = function () {
+      if (xhttp.readyState !== 4) return;
+
+      if (xhttp.status == 200) {
+        resolve(JSON.parse(xhttp.responseText).watchers_count);
+      } else {
+        reject({
+          status: xhttp.status,
+
+          statusText: xhttp.statusText,
+        });
+      }
+    };
+
+    xhttp.open("GET", url, true);
+
+    xhttp.send();
+  });
+}
+
+/**
+ * Gets the star count for a given Github organization or user and repository.
+ * @customfunction
+ * @param prompt string name of organization or user.
+ * @return openai response.
+ */
+export async function chat(prompt): Promise<string> {
+  const res = await fetchOpenAICompletion({
+    apiKey: OPENAI_API_KEY,
+    userContent: prompt,
+    // maxTokens: 2000,
+    model: AIModelName.GPT4_0613,
+  });
+  return res.choices[0].message.content;
+}
+
+/**
+ * Gets the star count for a given Github organization or user and repository.
+ * @customfunction
+ * @param prompt string name of organization or user.
+ * @param {CustomFunctions.StreamingInvocation<string>} invocation Streaming invocation parameter.
+ */
+export function streamChat(prompt, invocation: CustomFunctions.StreamingInvocation<string>): void {
+  fetchOpenAIStreamCompletion({
+    apiKey: OPENAI_API_KEY,
+    userContent: prompt,
+    model: AIModelName.GPT35TURBO,
+    invocation,
+  });
 }
