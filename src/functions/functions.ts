@@ -25,13 +25,17 @@ export async function chat(prompt: string): Promise<string> {
  * @param {CustomFunctions.StreamingInvocation<string>} invocation Streaming invocation parameter.
  */
 export function streamChat(prompt: string, invocation: CustomFunctions.StreamingInvocation<string>): void {
-  getAPIKey().then((apiKey) => {
-    fetchOpenAIStreamCompletion({
+  getAPIKey().then(async (apiKey) => {
+    const generator = fetchOpenAIStreamCompletion({
       apiKey,
       userContent: prompt,
       model: AIModelName.GPT4_0613,
-      invocation,
     });
+    let tokens = "";
+    for await (const token of generator) {
+      tokens += token;
+      invocation.setResult(tokens);
+    }
   });
 }
 
@@ -53,16 +57,20 @@ export function streamGPT(
   temperature: number,
   invocation: CustomFunctions.StreamingInvocation<string>
 ): void {
-  getAPIKey().then((apiKey) => {
-    fetchOpenAIStreamCompletion({
+  getAPIKey().then(async (apiKey) => {
+    const generator = fetchOpenAIStreamCompletion({
       model,
       maxTokens,
       temperature,
       apiKey,
       systemContent: systemPrompt,
       userContent: userPrompt,
-      invocation,
     });
+    let tokens = "";
+    for await (const token of generator) {
+      tokens += token;
+      invocation.setResult(tokens);
+    }
   });
 }
 

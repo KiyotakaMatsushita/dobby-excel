@@ -1,4 +1,4 @@
-/* global CustomFunctions, fetch */
+/* global AsyncGenerator, fetch */
 
 import { systemMessage, userMessage } from "../ChatCompletion/message";
 import { defaultSystemPrompt } from "../prompt/prompt_templates";
@@ -96,14 +96,13 @@ export async function fetchOpenAICompletion({
   return response.json();
 }
 
-export async function fetchOpenAIStreamCompletion({
+export async function* fetchOpenAIStreamCompletion({
   apiKey,
   model = AIModelName.GPT4_0613,
   systemContent = defaultSystemPrompt,
   userContent,
   maxTokens = 4000,
   temperature = 0,
-  invocation,
 }: {
   apiKey: string;
   model?: AIModelName;
@@ -111,8 +110,7 @@ export async function fetchOpenAIStreamCompletion({
   userContent: string;
   maxTokens?: number;
   temperature?: number;
-  invocation: CustomFunctions.StreamingInvocation<string>;
-}) {
+}): AsyncGenerator<string> {
   if (!apiKey) {
     throw new Error("OpenAI API key is not set");
   }
@@ -140,8 +138,6 @@ export async function fetchOpenAIStreamCompletion({
     throw new Error("Response body is undefined");
   }
 
-  let tokens = "";
-
   let isDone = false;
   while (!isDone) {
     const { done, value } = await reader.read();
@@ -159,8 +155,7 @@ export async function fetchOpenAIStreamCompletion({
       const json = JSON.parse(message);
       const token: string | undefined = json.choices[0].delta.content;
       if (token) {
-        tokens += token;
-        invocation.setResult(tokens); // Update the cell with the accumulated content
+        yield token;
       }
     }
   }
