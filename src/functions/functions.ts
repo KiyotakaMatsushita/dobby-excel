@@ -1,5 +1,5 @@
 ﻿/* global clearInterval, console, CustomFunctions, setInterval */
-import { OPENAI_API_KEY } from "../config";
+import { getAPIKey } from "../util/key";
 import { AIModelName, fetchOpenAICompletion, fetchOpenAIStreamCompletion } from "./core/provider/openai";
 /**
  * Adds two numbers.
@@ -106,10 +106,10 @@ export async function getStarCount(userName: string, repoName: string): Promise<
  * @return openai response.
  */
 export async function chat(prompt: string): Promise<string> {
+  const apiKey = await getAPIKey();
   const res = await fetchOpenAICompletion({
-    apiKey: OPENAI_API_KEY,
+    apiKey,
     userContent: prompt,
-    // maxTokens: 2000,
     model: AIModelName.GPT4_0613,
   });
   return res.choices[0].message.content;
@@ -122,10 +122,12 @@ export async function chat(prompt: string): Promise<string> {
  * @param {CustomFunctions.StreamingInvocation<string>} invocation Streaming invocation parameter.
  */
 export function streamChat(prompt: string, invocation: CustomFunctions.StreamingInvocation<string>): void {
-  fetchOpenAIStreamCompletion({
-    apiKey: OPENAI_API_KEY,
-    userContent: prompt,
-    model: AIModelName.GPT35TURBO,
-    invocation,
+  getAPIKey().then((apiKey) => {
+    fetchOpenAIStreamCompletion({
+      apiKey,
+      userContent: prompt,
+      model: AIModelName.GPT35TURBO,
+      invocation,
+    });
   });
 }

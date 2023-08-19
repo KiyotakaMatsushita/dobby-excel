@@ -1,7 +1,7 @@
 /* global CustomFunctions, fetch */
 
 import { systemMessage, userMessage } from "../ChatCompletion/message";
-import { defaultSystemPrompt } from "../prompt";
+import { defaultSystemPrompt } from "../prompt/prompt_templates";
 export interface OpenAIChatMessage {
   role: string;
   name?: string;
