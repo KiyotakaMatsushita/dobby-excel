@@ -1,103 +1,6 @@
-﻿/* global clearInterval, console, CustomFunctions, setInterval */
+﻿/* global CustomFunctions */
 import { getAPIKey } from "../util/key";
 import { AIModelName, fetchOpenAICompletion, fetchOpenAIStreamCompletion } from "./core/provider/openai";
-/**
- * Adds two numbers.
- * @customfunction
- * @param first First number
- * @param second Second number
- * @returns The sum of the two numbers.
- */
-export function add(first: number, second: number): number {
-  return first + second;
-}
-
-/**
- * Displays the current time once a second.
- * @customfunction
- * @param invocation Custom function handler
- */
-export function clock(invocation: CustomFunctions.StreamingInvocation<string>): void {
-  const timer = setInterval(() => {
-    const time = currentTime();
-    invocation.setResult(time);
-  }, 1000);
-
-  invocation.onCanceled = () => {
-    clearInterval(timer);
-  };
-}
-
-/**
- * Returns the current time.
- * @returns String with the current time formatted for the current locale.
- */
-export function currentTime(): string {
-  return new Date().toLocaleTimeString();
-}
-
-/**
- * Increments a value once a second.
- * @customfunction
- * @param incrementBy Amount to increment
- * @param invocation Custom function handler
- */
-export function increment(incrementBy: number, invocation: CustomFunctions.StreamingInvocation<number>): void {
-  let result = 0;
-  const timer = setInterval(() => {
-    result += incrementBy;
-    invocation.setResult(result);
-  }, 1000);
-
-  invocation.onCanceled = () => {
-    clearInterval(timer);
-  };
-}
-
-/**
- * Writes a message to console.log().
- * @customfunction LOG
- * @param message String to write.
- * @returns String to write.
- */
-export function logMessage(message: string): string {
-  console.log(message);
-
-  return message;
-}
-
-/**
- * Gets the star count for a given Github organization or user and repository.
- * @customfunction
- * @param userName string name of organization or user.
- * @param repoName string name of the repository.
- * @return number of stars.
- */
-export async function getStarCount(userName: string, repoName: string): Promise<number> {
-  const url = "https://api.github.com/repos/" + userName + "/" + repoName;
-
-  let xhttp = new XMLHttpRequest();
-
-  return new Promise(function (resolve, reject) {
-    xhttp.onreadystatechange = function () {
-      if (xhttp.readyState !== 4) return;
-
-      if (xhttp.status == 200) {
-        resolve(JSON.parse(xhttp.responseText).watchers_count);
-      } else {
-        reject({
-          status: xhttp.status,
-
-          statusText: xhttp.statusText,
-        });
-      }
-    };
-
-    xhttp.open("GET", url, true);
-
-    xhttp.send();
-  });
-}
 
 /**
  * Gets the star count for a given Github organization or user and repository.
@@ -126,8 +29,67 @@ export function streamChat(prompt: string, invocation: CustomFunctions.Streaming
     fetchOpenAIStreamCompletion({
       apiKey,
       userContent: prompt,
-      model: AIModelName.GPT35TURBO,
+      model: AIModelName.GPT4_0613,
       invocation,
     });
   });
+}
+
+/**
+ * Gets the star count for a given Github organization or user and repository.
+ * @customfunction
+ * @param model  OpenAI model name.
+ * @param systemPrompt  OpenAI system prompt.
+ * @param userPrompt  OpenAI user prompt.
+ * @param maxTokens  OpenAI maxTokens parameter.
+ * @param temperature  OpenAI temperature parameter.
+ * @param {CustomFunctions.StreamingInvocation<string>} invocation Streaming invocation parameter.
+ */
+export function streamGPT(
+  model,
+  systemPrompt: string,
+  userPrompt: string,
+  maxTokens: number,
+  temperature: number,
+  invocation: CustomFunctions.StreamingInvocation<string>
+): void {
+  getAPIKey().then((apiKey) => {
+    fetchOpenAIStreamCompletion({
+      model,
+      maxTokens,
+      temperature,
+      apiKey,
+      systemContent: systemPrompt,
+      userContent: userPrompt,
+      invocation,
+    });
+  });
+}
+
+/**
+ * Gets the star count for a given Github organization or user and repository.
+ * @customfunction
+ * @param model  OpenAI model name.
+ * @param systemPrompt  OpenAI system prompt.
+ * @param userPrompt  OpenAI user prompt.
+ * @param maxTokens  OpenAI maxTokens parameter.
+ * @param temperature  OpenAI temperature parameter.
+ */
+export async function GPT(
+  model,
+  systemPrompt: string,
+  userPrompt: string,
+  maxTokens: number,
+  temperature: number
+): Promise<string> {
+  const apiKey = await getAPIKey();
+  const res = await fetchOpenAICompletion({
+    model,
+    maxTokens,
+    temperature,
+    apiKey,
+    systemContent: systemPrompt,
+    userContent: userPrompt,
+  });
+  return res.choices[0].message.content;
 }
