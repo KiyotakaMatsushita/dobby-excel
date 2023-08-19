@@ -146,10 +146,10 @@ export async function fetchOpenAIStreamCompletion({
   while (!isDone) {
     const { done, value } = await reader.read();
     if (done) {
-      isDone = true;
-      break;
+      isDone = done;
+      reader.releaseLock();
     }
-    let chunkData = new TextDecoder().decode(value);
+    let chunkData = new TextDecoder("utf-8").decode(value);
     const lines = chunkData.split("\n").filter((line: string) => line.trim().startsWith("data: "));
     for (const line of lines) {
       const message = line.replace(/^data: /, "");
