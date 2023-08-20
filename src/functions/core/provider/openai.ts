@@ -1,6 +1,6 @@
 /* global AsyncGenerator, fetch */
 
-import { systemMessage, userMessage } from "../ChatCompletion/message";
+import { assistantMessage, systemMessage, userMessage } from "../ChatCompletion/message";
 import { defaultSystemPrompt } from "../prompt/prompt_templates";
 export interface OpenAIChatMessage {
   role: string;
@@ -58,6 +58,7 @@ export async function fetchOpenAICompletion({
   apiKey,
   model = AIModelName.GPT4_0613,
   systemContent = defaultSystemPrompt,
+  assistantContent,
   userContent,
   maxTokens = 4000,
   temperature = 0,
@@ -65,23 +66,31 @@ export async function fetchOpenAICompletion({
   apiKey: string;
   model?: AIModelName;
   systemContent?: string;
-  userContent: string;
+  assistantContent?: string;
+  userContent?: string;
   maxTokens?: number;
   temperature?: number;
 }): Promise<OpenAIResponse> {
   if (!apiKey) {
     throw new Error("OpenAI API key is not set");
   }
-  if (!userContent) {
-    throw new Error("User content is not set");
-  }
   const endpoint = "https://api.openai.com/v1/chat/completions";
 
   const headers = make_headers(apiKey);
 
+  const messages = [];
+  messages.push(systemMessage(systemContent));
+
+  if (assistantContent) {
+    messages.push(assistantMessage(assistantContent));
+  }
+  if (userContent) {
+    messages.push(userMessage(userContent));
+  }
+
   const body = make_body({
     model,
-    messages: [systemMessage(systemContent), userMessage(userContent)],
+    messages,
     maxTokens,
     temperature,
     stream: false,
@@ -100,6 +109,7 @@ export async function* fetchOpenAIStreamCompletion({
   apiKey,
   model = AIModelName.GPT4_0613,
   systemContent = defaultSystemPrompt,
+  assistantContent,
   userContent,
   maxTokens = 4000,
   temperature = 0,
@@ -107,24 +117,32 @@ export async function* fetchOpenAIStreamCompletion({
   apiKey: string;
   model?: AIModelName;
   systemContent?: string;
-  userContent: string;
+  assistantContent?: string;
+  userContent?: string;
   maxTokens?: number;
   temperature?: number;
 }): AsyncGenerator<string> {
   if (!apiKey) {
     throw new Error("OpenAI API key is not set");
   }
-  if (!userContent) {
-    throw new Error("User content is not set");
-  }
 
   const endpoint = "https://api.openai.com/v1/chat/completions";
 
   const headers = make_headers(apiKey);
 
+  const messages = [];
+  messages.push(systemMessage(systemContent));
+
+  if (assistantContent) {
+    messages.push(assistantMessage(assistantContent));
+  }
+  if (userContent) {
+    messages.push(userMessage(userContent));
+  }
+
   const body = make_body({
     model,
-    messages: [systemMessage(systemContent), userMessage(userContent)],
+    messages,
     maxTokens,
     temperature,
     stream: true,

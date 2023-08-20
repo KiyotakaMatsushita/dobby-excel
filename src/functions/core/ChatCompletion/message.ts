@@ -15,3 +15,8 @@ export const functionMessage = (name: string, content: string): OpenAIChatMessag
   role: "function",
   content,
 });
+
+export const assistantMessage = (content: string): OpenAIChatMessage => ({
+  role: "assistant",
+  content,
+});

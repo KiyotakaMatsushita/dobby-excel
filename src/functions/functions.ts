@@ -1,9 +1,9 @@
-﻿/* global CustomFunctions */
+﻿/* global CustomFunctions, console */
 import { getAPIKey } from "../util/key";
 import { AIModelName, fetchOpenAICompletion, fetchOpenAIStreamCompletion } from "./core/provider/openai";
 
 /**
- * Gets the star count for a given Github organization or user and repository.
+ * OpenAI GPT chat with user.
  * @customfunction
  * @param prompt string name of organization or user.
  * @return openai response.
@@ -19,7 +19,7 @@ export async function chat(prompt: string): Promise<string> {
 }
 
 /**
- * Gets the star count for a given Github organization or user and repository.
+ * OpenAI GPT stream chat with user.
  * @customfunction
  * @param prompt string name of organization or user.
  * @param {CustomFunctions.StreamingInvocation<string>} invocation Streaming invocation parameter.
@@ -40,10 +40,11 @@ export function streamChat(prompt: string, invocation: CustomFunctions.Streaming
 }
 
 /**
- * Gets the star count for a given Github organization or user and repository.
+ * OpenAI GPT stream chat with system and assistant.
  * @customfunction
  * @param model  OpenAI model name.
  * @param systemPrompt  OpenAI system prompt.
+ * @param assistantPrompt OpenAI assistant prompt.
  * @param userPrompt  OpenAI user prompt.
  * @param maxTokens  OpenAI maxTokens parameter.
  * @param temperature  OpenAI temperature parameter.
@@ -52,6 +53,7 @@ export function streamChat(prompt: string, invocation: CustomFunctions.Streaming
 export function streamGPT(
   model,
   systemPrompt: string,
+  assistantPrompt: string,
   userPrompt: string,
   maxTokens: number,
   temperature: number,
@@ -64,6 +66,7 @@ export function streamGPT(
       temperature,
       apiKey,
       systemContent: systemPrompt,
+      assistantContent: assistantPrompt,
       userContent: userPrompt,
     });
     let tokens = "";
@@ -75,10 +78,11 @@ export function streamGPT(
 }
 
 /**
- * Gets the star count for a given Github organization or user and repository.
+ * OpenAI GPT chat.
  * @customfunction
  * @param model  OpenAI model name.
  * @param systemPrompt  OpenAI system prompt.
+ * @param assistantPrompt OpenAI assistant prompt.
  * @param userPrompt  OpenAI user prompt.
  * @param maxTokens  OpenAI maxTokens parameter.
  * @param temperature  OpenAI temperature parameter.
@@ -86,6 +90,7 @@ export function streamGPT(
 export async function GPT(
   model,
   systemPrompt: string,
+  assistantPrompt: string,
   userPrompt: string,
   maxTokens: number,
   temperature: number
@@ -97,7 +102,20 @@ export async function GPT(
     temperature,
     apiKey,
     systemContent: systemPrompt,
+    assistantContent: assistantPrompt,
     userContent: userPrompt,
   });
   return res.choices[0].message.content;
+}
+
+/**
+ * Writes a message to console.log().
+ * @customfunction LOG
+ * @param message String to write.
+ * @returns String to write.
+ */
+export function logMessage(message: string): string {
+  console.log(message);
+
+  return message;
 }
