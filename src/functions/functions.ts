@@ -119,3 +119,12 @@ export function logMessage(message: string): string {
 
   return message;
 }
+
+/**
+ * Writes multiple message to console.log().
+ * @customfunction
+ * @param range A 2D range from Excel.
+ */
+export function logRange(range: string[][]): void {
+  console.log(range);
+}
