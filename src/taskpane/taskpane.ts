@@ -9,9 +9,9 @@ import { setAPIKey } from "../util/key";
 
 // The initialize function must be run each time a new page is loaded
 Office.onReady(() => {
-  document.getElementById("sideload-msg").style.display = "none";
-  document.getElementById("app-body").style.display = "flex";
-  document.getElementById("SaveOpenAIApiKey").onclick = saveKey;
+  document.getElementById("sideload-msg")!.style.display = "none";
+  document.getElementById("app-body")!.style.display = "flex";
+  document.getElementById("SaveOpenAIApiKey")!.onclick = saveKey;
 });
 
 export async function saveKey() {

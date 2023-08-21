@@ -33,12 +33,13 @@
         <a
           target="_blank"
           href="https://learn.microsoft.com/office/dev/add-ins/testing/test-debug-office-add-ins#sideload-an-office-add-in-for-testing"
+          rel="noopener noreferrer"
           >sideload</a
         >
         your add-in to see app body.
       </h2>
     </section>
-    <main id="app-body" class="ms-welcome__main" style="display: none">
+    <main id="app-body" class="ms-welcome__main app-body-hidden">
       <h2 class="ms-font-xl">Discover what Office Add-ins can do for you today!</h2>
       <ul class="ms-List ms-welcome__features">
         <li class="ms-ListItem">
@@ -55,7 +56,7 @@
         </li>
       </ul>
       <input type="text" id="keyInput" placeholder="Enter your key" />
-      <button id="SaveOpenAIApiKey"">Save Key</button>
+      <button id="SaveOpenAIApiKey">Save Key</button>
     </main>
   </body>
 </html>
