@@ -1,19 +1,36 @@
 /* global AsyncGenerator, fetch */
 
-import { assistantMessage, systemMessage, userMessage } from "../ChatCompletion/message";
-import { defaultSystemPrompt } from "../prompt/prompt_templates";
+import { systemMessage, userMessage } from "../ChatCompletion/message";
 export interface OpenAIChatMessage {
   role: string;
   name?: string;
   content: string;
 }
 
-export enum AIModelName {
-  GPT35TURBO = "gpt-3.5-turbo",
-  GPT4_0613 = "gpt-4-0613",
-  GPT4_0314 = "gpt-4-0314",
-  GPT4 = "gpt-4",
+export interface OpenAIUserMessage {
+  role: "user";
+  content: string;
 }
+
+export interface OpenAIAssistantMessage {
+  role: "assistant";
+  content: string;
+}
+
+export type OpenAIConversation = [OpenAIUserMessage, OpenAIAssistantMessage];
+
+export const OPENAI_MODEL_NAMES = [
+  "gpt-3.5-turbo",
+  "gpt-3.5-turbo-0301",
+  "gpt-3.5-turbo-0613",
+  "gpt-3.5-turbo-16k",
+  "gpt-3.5-turbo-16k-0613",
+  "gpt-4",
+  "gpt-4-0314",
+  "gpt-4-0613",
+] as const;
+
+export type AIModelNameType = (typeof OPENAI_MODEL_NAMES)[number];
 
 export interface OpenAIChatResponse {
   id: string;
@@ -32,7 +49,6 @@ export interface OpenAIChatResponse {
   }[];
 }
 
-// 定義: OpenAIのレスポンス型
 interface OpenAIResponse {
   id: string;
   object: string;
@@ -53,21 +69,20 @@ interface OpenAIResponse {
   };
 }
 
-// 関数: OpenAIのchatCompletionを実行
 export async function fetchOpenAICompletion({
   apiKey,
-  model = AIModelName.GPT4_0613,
-  systemContent = defaultSystemPrompt,
-  assistantContent,
+  model,
+  systemContent,
   userContent,
-  maxTokens = 4000,
-  temperature = 0,
+  conversationContents,
+  maxTokens,
+  temperature,
 }: {
   apiKey: string;
-  model?: AIModelName;
+  model?: AIModelNameType;
   systemContent?: string;
-  assistantContent?: string;
   userContent?: string;
+  conversationContents?: OpenAIConversation[];
   maxTokens?: number;
   temperature?: number;
 }): Promise<OpenAIResponse> {
@@ -78,15 +93,7 @@ export async function fetchOpenAICompletion({
 
   const headers = make_headers(apiKey);
 
-  const messages = [];
-  messages.push(systemMessage(systemContent));
-
-  if (assistantContent) {
-    messages.push(assistantMessage(assistantContent));
-  }
-  if (userContent) {
-    messages.push(userMessage(userContent));
-  }
+  const messages = make_messages({ systemContent, userContent, conversationContents });
 
   const body = make_body({
     model,
@@ -107,18 +114,18 @@ export async function fetchOpenAICompletion({
 
 export async function* fetchOpenAIStreamCompletion({
   apiKey,
-  model = AIModelName.GPT4_0613,
-  systemContent = defaultSystemPrompt,
-  assistantContent,
+  model,
+  systemContent,
   userContent,
-  maxTokens = 4000,
-  temperature = 0,
+  conversationContents,
+  maxTokens,
+  temperature,
 }: {
   apiKey: string;
-  model?: AIModelName;
+  model?: AIModelNameType;
   systemContent?: string;
-  assistantContent?: string;
   userContent?: string;
+  conversationContents?: OpenAIConversation[];
   maxTokens?: number;
   temperature?: number;
 }): AsyncGenerator<string> {
@@ -130,16 +137,7 @@ export async function* fetchOpenAIStreamCompletion({
 
   const headers = make_headers(apiKey);
 
-  const messages = [];
-  messages.push(systemMessage(systemContent));
-
-  if (assistantContent) {
-    messages.push(assistantMessage(assistantContent));
-  }
-  if (userContent) {
-    messages.push(userMessage(userContent));
-  }
-
+  const messages = make_messages({ systemContent, userContent, conversationContents });
   const body = make_body({
     model,
     messages,
@@ -205,11 +203,11 @@ function make_headers(apiKey: string): any {
 function make_body({
   model,
   messages,
-  maxTokens = 2000,
-  temperature = 0,
+  maxTokens,
+  temperature,
   stream,
 }: {
-  model: AIModelName;
+  model: AIModelNameType;
   messages: OpenAIChatMessage[];
   maxTokens?: number;
   temperature?: number;
@@ -222,4 +220,31 @@ function make_body({
     temperature,
     stream,
   });
+}
+
+function make_messages({
+  systemContent,
+  userContent,
+  conversationContents,
+}: {
+  systemContent: string;
+  userContent: string;
+  conversationContents: OpenAIConversation[];
+}): OpenAIChatMessage[] {
+  const messages: OpenAIChatMessage[] = [];
+  messages.push(systemMessage(systemContent));
+
+  if (conversationContents) {
+    for (const conversation of conversationContents) {
+      for (const message of conversation) {
+        messages.push(message);
+      }
+    }
+  }
+
+  if (userContent) {
+    messages.push(userMessage(userContent));
+  }
+
+  return messages;
 }
