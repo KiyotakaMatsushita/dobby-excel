@@ -1,5 +1,5 @@
 ﻿/* global CustomFunctions, console */
-import { convertStringToUnionType } from "src/util/typeConverter";
+import { convertStringToUnionType } from "../util/typeConverter";
 import { getAPIKey } from "../util/key";
 import { assistantMessage, userMessage } from "./core/ChatCompletion/message";
 import {
