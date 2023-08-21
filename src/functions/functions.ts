@@ -29,7 +29,6 @@ export function streamGPT(
   temperature: number,
   invocation: CustomFunctions.StreamingInvocation<string>
 ): void {
-  console.log(conversationHistory);
   let m = model as AIModelNameType;
 
   getAPIKey().then(async (apiKey) => {
@@ -90,7 +89,6 @@ export async function GPT(
   temperature: number
 ): Promise<string> {
   const apiKey = await getAPIKey();
-  console.log(conversationHistory);
 
   let m = model as AIModelNameType;
 
