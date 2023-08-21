@@ -26,6 +26,7 @@ export async function chat(prompt: string): Promise<string> {
  */
 export function streamChat(prompt: string, invocation: CustomFunctions.StreamingInvocation<string>): void {
   getAPIKey().then(async (apiKey) => {
+    console.log("apiKey", apiKey);
     const generator = fetchOpenAIStreamCompletion({
       apiKey,
       userContent: prompt,
