@@ -1,9 +1,9 @@
 ﻿/* global CustomFunctions, console */
+import { convertStringToUnionType } from "src/util/typeConverter";
 import { getAPIKey } from "../util/key";
-// import { defaultSystemPrompt } from "./core/prompt/prompt_templates";
 import { assistantMessage, userMessage } from "./core/ChatCompletion/message";
 import {
-  AIModelNameType,
+  OPENAI_MODEL_NAMES,
   OpenAIConversation,
   fetchOpenAICompletion,
   fetchOpenAIStreamCompletion,
@@ -29,7 +29,11 @@ export function streamGPT(
   temperature: number,
   invocation: CustomFunctions.StreamingInvocation<string>
 ): void {
-  let m = model as AIModelNameType;
+  const m = convertStringToUnionType(model, OPENAI_MODEL_NAMES);
+
+  if (!m) {
+    throw new Error("Invalid model name");
+  }
 
   getAPIKey().then(async (apiKey) => {
     const generator = fetchOpenAIStreamCompletion({
@@ -90,7 +94,11 @@ export async function GPT(
 ): Promise<string> {
   const apiKey = await getAPIKey();
 
-  let m = model as AIModelNameType;
+  const m = convertStringToUnionType(model, OPENAI_MODEL_NAMES);
+
+  if (!m) {
+    throw new Error("Invalid model name");
+  }
 
   const res = await fetchOpenAICompletion({
     model: m,
@@ -104,7 +112,7 @@ export async function GPT(
   return res.choices[0].message.content;
 }
 
-const makeConversationContents = (conversationHistory): OpenAIConversation[] => {
+const makeConversationContents = (conversationHistory: string[][]): OpenAIConversation[] => {
   const conversationContents: OpenAIConversation[] = [];
   for (const convesation of conversationHistory) {
     conversationContents.push([userMessage(convesation[0]), assistantMessage(convesation[1])]);

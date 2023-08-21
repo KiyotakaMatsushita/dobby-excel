@@ -79,12 +79,12 @@ export async function fetchOpenAICompletion({
   temperature,
 }: {
   apiKey: string;
-  model?: AIModelNameType;
-  systemContent?: string;
-  userContent?: string;
-  conversationContents?: OpenAIConversation[];
-  maxTokens?: number;
-  temperature?: number;
+  model: AIModelNameType;
+  systemContent: string;
+  userContent: string;
+  conversationContents: OpenAIConversation[];
+  maxTokens: number;
+  temperature: number;
 }): Promise<OpenAIResponse> {
   if (!apiKey) {
     throw new Error("OpenAI API key is not set");
@@ -122,12 +122,12 @@ export async function* fetchOpenAIStreamCompletion({
   temperature,
 }: {
   apiKey: string;
-  model?: AIModelNameType;
-  systemContent?: string;
-  userContent?: string;
-  conversationContents?: OpenAIConversation[];
-  maxTokens?: number;
-  temperature?: number;
+  model: AIModelNameType;
+  systemContent: string;
+  userContent: string;
+  conversationContents: OpenAIConversation[];
+  maxTokens: number;
+  temperature: number;
 }): AsyncGenerator<string> {
   if (!apiKey) {
     throw new Error("OpenAI API key is not set");
