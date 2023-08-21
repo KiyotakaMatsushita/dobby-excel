@@ -1,10 +1,10 @@
 ﻿/* global CustomFunctions, console */
 import { getAPIKey } from "../util/key";
 // import { defaultSystemPrompt } from "./core/prompt/prompt_templates";
-// import { assistantMessage, userMessage } from "./core/ChatCompletion/message";
+import { assistantMessage, userMessage } from "./core/ChatCompletion/message";
 import {
   AIModelNameType,
-  // OpenAIConversation,
+  OpenAIConversation,
   fetchOpenAICompletion,
   fetchOpenAIStreamCompletion,
 } from "./core/provider/openai";
@@ -14,7 +14,7 @@ import {
  * @customfunction
  * @param systemPrompt  OpenAI system prompt.
  * @param userPrompt  Last OpenAI user prompt.
-//  * @param historyConversations array of user and assistant conversations.
+ * @param conversationHistory a 2D range of user and assistant conversations.
  * @param model  OpenAI model name.
  * @param maxTokens  OpenAI maxTokens parameter.
  * @param temperature  OpenAI temperature parameter.
@@ -23,12 +23,13 @@ import {
 export function streamGPT(
   systemPrompt: string,
   userPrompt: string,
-  // historyConversations,
+  conversationHistory: string[][],
   model: string,
   maxTokens: number,
   temperature: number,
   invocation: CustomFunctions.StreamingInvocation<string>
 ): void {
+  console.log(conversationHistory);
   let m = model as AIModelNameType;
 
   getAPIKey().then(async (apiKey) => {
@@ -39,7 +40,7 @@ export function streamGPT(
       apiKey,
       systemContent: systemPrompt,
       userContent: userPrompt,
-      // conversationContents: makeConversationContents(historyConversations),
+      conversationContents: makeConversationContents(conversationHistory),
     });
     let tokens = "";
     for await (const token of generator) {
@@ -75,7 +76,7 @@ export function logRange(range: string[][]): void {
  * @customfunction
  * @param systemPrompt  OpenAI system prompt.
  * @param userPrompt  Last OpenAI user prompt.
-//  * @param historyConversations array of user and assistant conversations.
+ * @param conversationHistory a 2D range of user and assistant conversations.
  * @param model  OpenAI model name.
  * @param maxTokens  OpenAI maxTokens parameter.
  * @param temperature  OpenAI temperature parameter.
@@ -83,12 +84,13 @@ export function logRange(range: string[][]): void {
 export async function GPT(
   systemPrompt: string,
   userPrompt: string,
-  // historyConversations,
+  conversationHistory: string[][],
   model: string,
   maxTokens: number,
   temperature: number
 ): Promise<string> {
   const apiKey = await getAPIKey();
+  console.log(conversationHistory);
 
   let m = model as AIModelNameType;
 
@@ -99,15 +101,15 @@ export async function GPT(
     apiKey,
     systemContent: systemPrompt,
     userContent: userPrompt,
-    // conversationContents: makeConversationContents(historyConversations),
+    conversationContents: makeConversationContents(conversationHistory),
   });
   return res.choices[0].message.content;
 }
 
-// const makeConversationContents = (historyConversations): OpenAIConversation[] => {
-//   const conversationContents: OpenAIConversation[] = [];
-//   for (const convesation of historyConversations) {
-//     conversationContents.push([userMessage(convesation[0]), assistantMessage(convesation[1])]);
-//   }
-//   return conversationContents;
-// };
+const makeConversationContents = (conversationHistory): OpenAIConversation[] => {
+  const conversationContents: OpenAIConversation[] = [];
+  for (const convesation of conversationHistory) {
+    conversationContents.push([userMessage(convesation[0]), assistantMessage(convesation[1])]);
+  }
+  return conversationContents;
+};

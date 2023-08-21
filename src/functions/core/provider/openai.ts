@@ -74,7 +74,7 @@ export async function fetchOpenAICompletion({
   model,
   systemContent,
   userContent,
-  // conversationContents,
+  conversationContents,
   maxTokens,
   temperature,
 }: {
@@ -82,7 +82,7 @@ export async function fetchOpenAICompletion({
   model?: AIModelNameType;
   systemContent?: string;
   userContent?: string;
-  // conversationContents?: OpenAIConversation[];
+  conversationContents?: OpenAIConversation[];
   maxTokens?: number;
   temperature?: number;
 }): Promise<OpenAIResponse> {
@@ -93,8 +93,7 @@ export async function fetchOpenAICompletion({
 
   const headers = make_headers(apiKey);
 
-  // const messages = make_messages({ systemContent, userContent, conversationContents });
-  const messages = make_messages({ systemContent, userContent });
+  const messages = make_messages({ systemContent, userContent, conversationContents });
 
   const body = make_body({
     model,
@@ -118,7 +117,7 @@ export async function* fetchOpenAIStreamCompletion({
   model,
   systemContent,
   userContent,
-  // conversationContents = [],
+  conversationContents,
   maxTokens,
   temperature,
 }: {
@@ -126,7 +125,7 @@ export async function* fetchOpenAIStreamCompletion({
   model?: AIModelNameType;
   systemContent?: string;
   userContent?: string;
-  // conversationContents?: OpenAIConversation[];
+  conversationContents?: OpenAIConversation[];
   maxTokens?: number;
   temperature?: number;
 }): AsyncGenerator<string> {
@@ -138,9 +137,7 @@ export async function* fetchOpenAIStreamCompletion({
 
   const headers = make_headers(apiKey);
 
-  // const messages = make_messages({ systemContent, userContent, conversationContents });
-  const messages = make_messages({ systemContent, userContent });
-
+  const messages = make_messages({ systemContent, userContent, conversationContents });
   const body = make_body({
     model,
     messages,
@@ -225,24 +222,25 @@ function make_body({
   });
 }
 
-function make_messages(
-  // { systemContent, userContent, conversationContents } = {
-  { systemContent, userContent } = {
-    systemContent: "",
-    userContent: "",
-    // conversationContents: [],
-  }
-): OpenAIChatMessage[] {
+function make_messages({
+  systemContent,
+  userContent,
+  conversationContents,
+}: {
+  systemContent: string;
+  userContent: string;
+  conversationContents: OpenAIConversation[];
+}): OpenAIChatMessage[] {
   const messages: OpenAIChatMessage[] = [];
   messages.push(systemMessage(systemContent));
 
-  // if (conversationContents) {
-  //   for (const conversation of conversationContents) {
-  //     for (const message of conversation) {
-  //       messages.push(message);
-  //     }
-  //   }
-  // }
+  if (conversationContents) {
+    for (const conversation of conversationContents) {
+      for (const message of conversation) {
+        messages.push(message);
+      }
+    }
+  }
 
   if (userContent) {
     messages.push(userMessage(userContent));
