@@ -1,9 +1,10 @@
 ﻿/* global CustomFunctions, console */
 import { getAPIKey } from "../util/key";
-import { assistantMessage, userMessage } from "./core/ChatCompletion/message";
+// import { defaultSystemPrompt } from "./core/prompt/prompt_templates";
+// import { assistantMessage, userMessage } from "./core/ChatCompletion/message";
 import {
-  AIModelName,
-  OpenAIConversation,
+  AIModelNameType,
+  // OpenAIConversation,
   fetchOpenAICompletion,
   fetchOpenAIStreamCompletion,
 } from "./core/provider/openai";
@@ -13,7 +14,7 @@ import {
  * @customfunction
  * @param systemPrompt  OpenAI system prompt.
  * @param userPrompt  Last OpenAI user prompt.
- * @param historyConversations array of user and assistant conversations.
+//  * @param historyConversations array of user and assistant conversations.
  * @param model  OpenAI model name.
  * @param maxTokens  OpenAI maxTokens parameter.
  * @param temperature  OpenAI temperature parameter.
@@ -21,22 +22,24 @@ import {
  */
 export function streamGPT(
   systemPrompt: string,
-  userPrompt: string = "",
-  historyConversations: HistoryConversations,
-  model = AIModelName.GPT4_0613,
-  maxTokens: number = 2000,
-  temperature: number = 0,
+  userPrompt: string,
+  // historyConversations,
+  model: string,
+  maxTokens: number,
+  temperature: number,
   invocation: CustomFunctions.StreamingInvocation<string>
 ): void {
+  let m = model as AIModelNameType;
+
   getAPIKey().then(async (apiKey) => {
     const generator = fetchOpenAIStreamCompletion({
-      model,
+      model: m,
       maxTokens,
       temperature,
       apiKey,
       systemContent: systemPrompt,
       userContent: userPrompt,
-      conversationContents: makeConversationContents(historyConversations),
+      // conversationContents: makeConversationContents(historyConversations),
     });
     let tokens = "";
     for await (const token of generator) {
@@ -72,38 +75,39 @@ export function logRange(range: string[][]): void {
  * @customfunction
  * @param systemPrompt  OpenAI system prompt.
  * @param userPrompt  Last OpenAI user prompt.
- * @param historyConversations array of user and assistant conversations.
+//  * @param historyConversations array of user and assistant conversations.
  * @param model  OpenAI model name.
  * @param maxTokens  OpenAI maxTokens parameter.
  * @param temperature  OpenAI temperature parameter.
  */
 export async function GPT(
   systemPrompt: string,
-  userPrompt: string = "",
-  historyConversations: HistoryConversations,
-  model = AIModelName.GPT4_0613,
-  maxTokens: number = 2000,
-  temperature: number = 0
+  userPrompt: string,
+  // historyConversations,
+  model: string,
+  maxTokens: number,
+  temperature: number
 ): Promise<string> {
   const apiKey = await getAPIKey();
+
+  let m = model as AIModelNameType;
+
   const res = await fetchOpenAICompletion({
-    model,
+    model: m,
     maxTokens,
     temperature,
     apiKey,
     systemContent: systemPrompt,
     userContent: userPrompt,
-    conversationContents: makeConversationContents(historyConversations),
+    // conversationContents: makeConversationContents(historyConversations),
   });
   return res.choices[0].message.content;
 }
 
-const makeConversationContents = (historyConversations): OpenAIConversation[] => {
-  const conversationContents: OpenAIConversation[] = [];
-  for (const convesation of historyConversations) {
-    conversationContents.push([userMessage(convesation[0]), assistantMessage(convesation[1])]);
-  }
-  return conversationContents;
-};
-
-type HistoryConversations = string[][];
+// const makeConversationContents = (historyConversations): OpenAIConversation[] => {
+//   const conversationContents: OpenAIConversation[] = [];
+//   for (const convesation of historyConversations) {
+//     conversationContents.push([userMessage(convesation[0]), assistantMessage(convesation[1])]);
+//   }
+//   return conversationContents;
+// };
