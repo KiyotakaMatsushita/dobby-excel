@@ -24,6 +24,7 @@ export async function chat(prompt: string): Promise<string> {
  * @param prompt string name of organization or user.
  * @param {CustomFunctions.StreamingInvocation<string>} invocation Streaming invocation parameter.
  */
+
 export function streamChat(prompt: string, invocation: CustomFunctions.StreamingInvocation<string>): void {
   getAPIKey().then(async (apiKey) => {
     const generator = fetchOpenAIStreamCompletion({
