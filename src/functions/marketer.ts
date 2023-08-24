@@ -3,6 +3,8 @@ import { genericGPT } from "./gpt";
 /**
  * Marketer GPT
  * @customfunction
+ * @param {userPrompt} OpenAI user prompt.
+ * @return {Promise<string>} OpenAI response.
  */
 export async function marketerGPT(
   userPrompt: string,
