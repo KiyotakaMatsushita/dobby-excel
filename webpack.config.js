@@ -24,7 +24,7 @@ module.exports = async (env, options) => {
       polyfill: ["core-js/stable", "regenerator-runtime/runtime"],
       taskpane: ["./src/taskpane/taskpane.ts", "./src/taskpane/taskpane.html"],
       commands: "./src/commands/commands.ts",
-      functions: "./src/functions/functions.ts",
+      functions: ["./src/functions/gpt.ts", "./src/functions/log.ts"],
     },
     output: {
       clean: true,
@@ -66,7 +66,7 @@ module.exports = async (env, options) => {
     plugins: [
       new CustomFunctionsMetadataPlugin({
         output: "functions.json",
-        input: "./src/functions/functions.ts",
+        input: ["./src/functions/gpt.ts", "./src/functions/log.ts"],
       }),
       new HtmlWebpackPlugin({
         filename: "functions.html",

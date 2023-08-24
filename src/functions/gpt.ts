@@ -1,4 +1,4 @@
-﻿/* global CustomFunctions, console */
+﻿/* global CustomFunctions */
 import { convertStringToUnionType } from "../util/typeConverter";
 import { getAPIKey } from "../util/key";
 import { assistantMessage, userMessage } from "./core/ChatCompletion/message";
@@ -51,27 +51,6 @@ export function streamGPT(
       invocation.setResult(tokens);
     }
   });
-}
-
-/**
- * Writes a message to console.log().
- * @customfunction LOG
- * @param message String to write.
- * @returns String to write.
- */
-export function logMessage(message: string): string {
-  console.log(message);
-
-  return message;
-}
-
-/**
- * Writes multiple message to console.log().
- * @customfunction
- * @param range A 2D range from Excel.
- */
-export function logRange(range: string[][]): void {
-  console.log(range);
 }
 
 /**
