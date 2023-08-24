@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-
+const fs = require("fs");
 const devCerts = require("office-addin-dev-certs");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const CustomFunctionsMetadataPlugin = require("custom-functions-metadata-plugin");
@@ -8,6 +8,15 @@ const path = require("path");
 
 const urlDev = "https://127.0.0.1:2000/";
 const urlProd = "https://www.dobby-excel.com/"; // CHANGE THIS TO YOUR PRODUCTION DEPLOYMENT LOCATION
+
+// ディレクトリのパス
+const functionsDir = path.resolve(__dirname, "./src/functions");
+// ディレクトリ内のファイルを読み込む
+const files = fs.readdirSync(functionsDir);
+// .tsファイルだけをフィルタリング
+const tsFiles = files.filter((file) => file.endsWith(".ts"));
+// フルパスに変換
+const functionTsFiles = tsFiles.map((file) => path.join(functionsDir, file));
 
 /* global require, module, process, __dirname */
 
@@ -24,7 +33,7 @@ module.exports = async (env, options) => {
       polyfill: ["core-js/stable", "regenerator-runtime/runtime"],
       taskpane: ["./src/taskpane/taskpane.ts", "./src/taskpane/taskpane.html"],
       commands: "./src/commands/commands.ts",
-      functions: ["./src/functions/gpt.ts", "./src/functions/log.ts"],
+      functions: functionTsFiles,
     },
     output: {
       clean: true,
@@ -66,7 +75,7 @@ module.exports = async (env, options) => {
     plugins: [
       new CustomFunctionsMetadataPlugin({
         output: "functions.json",
-        input: ["./src/functions/gpt.ts", "./src/functions/log.ts"],
+        input: functionTsFiles,
       }),
       new HtmlWebpackPlugin({
         filename: "functions.html",
