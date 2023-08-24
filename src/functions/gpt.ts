@@ -1,13 +1,8 @@
 ﻿/* global CustomFunctions */
 import { convertStringToUnionType } from "../util/typeConverter";
 import { getAPIKey } from "../util/key";
-import { assistantMessage, userMessage } from "./core/ChatCompletion/message";
-import {
-  OPENAI_MODEL_NAMES,
-  OpenAIConversation,
-  fetchOpenAICompletion,
-  fetchOpenAIStreamCompletion,
-} from "./core/provider/openai";
+import { makeConversationContents } from "./core/ChatCompletion/message";
+import { OPENAI_MODEL_NAMES, fetchOpenAICompletion, fetchOpenAIStreamCompletion } from "./core/provider/openai";
 
 /**
  * OpenAI GPT stream chat with system and assistant.
@@ -90,11 +85,32 @@ export async function GPT(
   });
   return res.choices[0].message.content;
 }
+export async function genericGPT(
+  userPrompt: string,
+  systemPrompt: string,
+  conversationHistory: string[][],
+  model: string,
+  maxTokens: number,
+  temperature: number
+): Promise<string> {
+  const apiKey = await getAPIKey();
 
-const makeConversationContents = (conversationHistory: string[][]): OpenAIConversation[] => {
-  const conversationContents: OpenAIConversation[] = [];
-  for (const convesation of conversationHistory) {
-    conversationContents.push([userMessage(convesation[0]), assistantMessage(convesation[1])]);
+  const m = convertStringToUnionType(model, OPENAI_MODEL_NAMES);
+
+  if (!m) {
+    let error = new CustomFunctions.Error(CustomFunctions.ErrorCode.invalidValue, "Invalid model name");
+    throw error;
   }
-  return conversationContents;
-};
+
+  const res = await fetchOpenAICompletion({
+    model: m,
+    maxTokens,
+    temperature,
+    apiKey,
+    systemContent: systemPrompt,
+    userContent: userPrompt,
+    conversationContents: makeConversationContents(conversationHistory),
+  });
+
+  return res.choices[0].message.content;
+}
