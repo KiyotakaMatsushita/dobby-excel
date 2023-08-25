@@ -93,8 +93,41 @@ export async function genericGPT(
   maxTokens: number,
   temperature: number
 ): Promise<string> {
-  const apiKey = await getAPIKey();
+  try {
+    const apiKey = await getAPIKey();
 
+    const m = convertStringToUnionType(model, OPENAI_MODEL_NAMES);
+
+    if (!m) {
+      let error = new CustomFunctions.Error(CustomFunctions.ErrorCode.invalidValue, "Invalid model name");
+      throw error;
+    }
+
+    const res = await fetchOpenAICompletion({
+      model: m,
+      maxTokens,
+      temperature,
+      apiKey,
+      systemContent: systemPrompt,
+      userContent: userPrompt,
+      conversationContents: makeConversationContents(conversationHistory),
+    });
+
+    return res.choices[0].message.content;
+  } catch (error) {
+    throw new CustomFunctions.Error(CustomFunctions.ErrorCode.notAvailable, error as string | undefined);
+  }
+}
+
+export function genericStreamGPT(
+  userPrompt: string,
+  systemPrompt: string,
+  conversationHistory: string[][],
+  model: string,
+  maxTokens: number,
+  temperature: number,
+  invocation: CustomFunctions.StreamingInvocation<string>
+): void {
   const m = convertStringToUnionType(model, OPENAI_MODEL_NAMES);
 
   if (!m) {
@@ -102,15 +135,20 @@ export async function genericGPT(
     throw error;
   }
 
-  const res = await fetchOpenAICompletion({
-    model: m,
-    maxTokens,
-    temperature,
-    apiKey,
-    systemContent: systemPrompt,
-    userContent: userPrompt,
-    conversationContents: makeConversationContents(conversationHistory),
+  getAPIKey().then(async (apiKey) => {
+    const generator = fetchOpenAIStreamCompletion({
+      model: m,
+      maxTokens,
+      temperature,
+      apiKey,
+      systemContent: systemPrompt,
+      userContent: userPrompt,
+      conversationContents: makeConversationContents(conversationHistory),
+    });
+    let tokens = "";
+    for await (const token of generator) {
+      tokens += token;
+      invocation.setResult(tokens);
+    }
   });
-
-  return res.choices[0].message.content;
 }
